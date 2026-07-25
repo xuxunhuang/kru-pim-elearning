@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+﻿import { env } from "cloudflare:workers";
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 
@@ -30,7 +30,7 @@ export async function requireUser() {
   const tokenHash = await sha256(token);
   const now = new Date().toISOString();
   const row = await env.DB.prepare(`
-    SELECT u.id, u.email, u.display_name_admin AS displayName, u.role
+    SELECT u.id, u.email, u.display_name_admin AS displayName, u.role, s.id AS sessionId, s.device_id AS deviceId
     FROM sessions s
     JOIN users u ON u.id = s.user_id
     WHERE s.token_hash = ?1
@@ -38,8 +38,9 @@ export async function requireUser() {
       AND s.expires_at > ?2
       AND u.status = 'active'
     LIMIT 1
-  `).bind(tokenHash, now).first<{ id: string; email: string; displayName: string; role: string }>();
+  `).bind(tokenHash, now).first<{ id: string; email: string; displayName: string; role: string; sessionId: string; deviceId: string }>();
 
   if (!row) redirect("/?reason=session");
   return row;
 }
+

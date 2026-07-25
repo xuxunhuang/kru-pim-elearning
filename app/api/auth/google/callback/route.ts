@@ -1,4 +1,4 @@
-import { env } from "cloudflare:workers";
+﻿import { env } from "cloudflare:workers";
 import { NextRequest, NextResponse } from "next/server";
 import { base64Url, DEVICE_COOKIE, randomToken, SESSION_COOKIE, sha256 } from "@/lib/auth";
 
@@ -73,7 +73,7 @@ export async function GET(request: NextRequest) {
       await env.DB.prepare(`
         INSERT INTO users (id, google_sub, email, display_name_admin, role, status, max_devices, created_at, updated_at)
         VALUES (?1, ?2, ?3, ?4, 'owner', 'active', 2, ?5, ?5)
-      `).bind(userId, profile.sub, email, profile.name || "ครูพิม", now).run();
+      `).bind(userId, profile.sub, email, profile.name || "à¸„à¸£à¸¹à¸žà¸´à¸¡", now).run();
       user = { id: userId, status: "active", maxDevices: 2 };
     }
     if (user.status !== "active") return NextResponse.redirect(appUrl("/?reason=disabled"));
@@ -92,7 +92,7 @@ export async function GET(request: NextRequest) {
       if ((count?.total ?? 0) >= user.maxDevices) return NextResponse.redirect(appUrl("/?reason=device-limit"));
       await env.DB.prepare(`
         INSERT INTO devices (id, user_id, public_key, label, user_agent_hash, status, created_at, last_seen_at, revoked_at)
-        VALUES (?1, ?2, NULL, 'อุปกรณ์ที่ลงทะเบียน', ?3, 'approved', ?4, ?4, NULL)
+        VALUES (?1, ?2, NULL, 'à¸­à¸¸à¸›à¸à¸£à¸“à¹Œà¸—à¸µà¹ˆà¸¥à¸‡à¸—à¸°à¹€à¸šà¸µà¸¢à¸™', ?3, 'approved', ?4, ?4, NULL)
       `).bind(deviceId, user.id, userAgentHash, now).run();
     } else if (device.status !== "approved") {
       return NextResponse.redirect(appUrl("/?reason=device"));
@@ -109,7 +109,7 @@ export async function GET(request: NextRequest) {
       VALUES (?1, ?2, ?3, ?4, 1, ?5, ?6, NULL, ?6)
     `).bind(sessionId, user.id, deviceId, tokenHash, expiresAt, now).run();
 
-    const response = NextResponse.redirect(appUrl("/demo"));
+    const response = NextResponse.redirect(appUrl("/learn"));
     response.cookies.delete(FLOW_COOKIE);
     response.cookies.set(SESSION_COOKIE, rawToken, { httpOnly: true, secure: true, sameSite: "lax", maxAge: SESSION_DAYS * 86400, path: "/" });
     response.cookies.set(DEVICE_COOKIE, deviceId, { httpOnly: true, secure: true, sameSite: "lax", maxAge: 365 * 86400, path: "/" });
@@ -118,3 +118,4 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(appUrl("/?reason=oauth-failed"));
   }
 }
+
