@@ -78,6 +78,9 @@ export async function GET(request: NextRequest) {
     }
     if (user.status !== "active") return NextResponse.redirect(appUrl("/?reason=disabled"));
 
+    await env.DB.prepare("UPDATE users SET google_sub = ?1, updated_at = ?2 WHERE id = ?3")
+      .bind(profile.sub, new Date().toISOString(), user.id).run();
+
     const existingDevice = request.cookies.get(DEVICE_COOKIE)?.value;
     const deviceId = existingDevice || crypto.randomUUID();
     const userAgent = request.headers.get("user-agent") || "unknown";
@@ -118,4 +121,6 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(appUrl("/?reason=oauth-failed"));
   }
 }
+
+
 
