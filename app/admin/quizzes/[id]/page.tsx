@@ -1,0 +1,2 @@
+import { requireUser } from "@/lib/auth";import { assertAdmin } from "@/lib/data";import { ReportClient } from "./ReportClient";import "./report.css";
+export const dynamic="force-dynamic";export default async function Page({params}:{params:Promise<{id:string}>}){const user=await requireUser();assertAdmin(user);const{id}=await params;return <main className="quiz-report-shell"><a href="/admin">← กลับหลังบ้าน</a><ReportClient id={id}/></main>}

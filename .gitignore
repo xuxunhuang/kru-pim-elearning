@@ -1,7 +1,17 @@
 node_modules/
 .next/
 dist/
+build/
+pages-dist/
+tmp/
 .wrangler/
 .env
 .env.local
+.dev.vars
+.dev.vars.*
+!.env.example
+*.pem
+*.key
+*service-account*.json
+client_secret_*.json
 *.log

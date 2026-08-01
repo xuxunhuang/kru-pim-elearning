@@ -114,3 +114,10 @@ export const auditLogs = sqliteTable("audit_logs", {
 export const policyVersions = sqliteTable("policy_versions", { id:text("id").primaryKey(), scope:text("scope").notNull(), version:integer("version").notNull(), title:text("title").notNull(), body:text("body").notNull(), publishedAt:text("published_at").notNull() }, t => [uniqueIndex("policy_scope_version_unique").on(t.scope,t.version)]);
 export const policyAcceptances = sqliteTable("policy_acceptances", { id:text("id").primaryKey(), userId:text("user_id").notNull().references(()=>users.id), policyVersionId:text("policy_version_id").notNull().references(()=>policyVersions.id), courseId:text("course_id").references(()=>courses.id), lessonId:text("lesson_id").references(()=>lessons.id), sessionId:text("session_id").references(()=>sessions.id), ipHash:text("ip_hash").notNull(), acceptedAt:text("accepted_at").notNull() }, t => [index("acceptance_user_course_idx").on(t.userId,t.courseId,t.acceptedAt)]);
 export const usageEvents = sqliteTable("usage_events", { id:text("id").primaryKey(), userId:text("user_id").notNull().references(()=>users.id), lessonId:text("lesson_id").references(()=>lessons.id), sessionId:text("session_id").references(()=>sessions.id), eventType:text("event_type").notNull(), detailJson:text("detail_json"), ipHash:text("ip_hash").notNull(), occurredAt:text("occurred_at").notNull() }, t => [index("usage_user_time_idx").on(t.userId,t.occurredAt),index("usage_lesson_time_idx").on(t.lessonId,t.occurredAt)]);
+
+export const siteSettings = sqliteTable("site_settings", {
+  settingKey: text("setting_key").primaryKey(),
+  valueJson: text("value_json").notNull(),
+  updatedBy: text("updated_by").notNull().references(() => users.id),
+  updatedAt: text("updated_at").notNull(),
+});

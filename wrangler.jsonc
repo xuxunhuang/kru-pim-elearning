@@ -1,0 +1,15 @@
+﻿{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "krupim-mathlearning",
+  "pages_build_output_dir": "./pages-dist",
+  "compatibility_date": "2026-07-27",
+  "compatibility_flags": ["nodejs_compat"],
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "krupim-mathlearning",
+      "database_id": "ee528e6d-9fb4-4b6b-9930-c7c40358e4fa",
+      "migrations_dir": "drizzle"
+    }
+  ]
+}

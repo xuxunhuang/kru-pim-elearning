@@ -1,4 +1,4 @@
-﻿import { env } from "cloudflare:workers";
+import { env } from "cloudflare:workers";
 import { NextRequest, NextResponse } from "next/server";
 import { base64Url, DEVICE_COOKIE, randomToken, SESSION_COOKIE, sha256 } from "@/lib/auth";
 
@@ -63,8 +63,8 @@ export async function GET(request: NextRequest) {
 
     const email = profile.email.trim().toLowerCase();
     const ownerEmail = process.env.OWNER_EMAIL?.trim().toLowerCase();
-    let user = await env.DB.prepare("SELECT id, status, max_devices AS maxDevices FROM users WHERE google_sub = ?1 OR email = ?2 LIMIT 1")
-      .bind(profile.sub, email).first<{ id: string; status: string; maxDevices: number }>();
+    let user = await env.DB.prepare("SELECT id, role, status, max_devices AS maxDevices FROM users WHERE google_sub = ?1 OR email = ?2 LIMIT 1")
+      .bind(profile.sub, email).first<{ id: string; role: string; status: string; maxDevices: number }>();
 
     if (!user) {
       if (!ownerEmail || email !== ownerEmail) return NextResponse.redirect(appUrl("/?reason=not-allowed"));
@@ -73,8 +73,8 @@ export async function GET(request: NextRequest) {
       await env.DB.prepare(`
         INSERT INTO users (id, google_sub, email, display_name_admin, role, status, max_devices, created_at, updated_at)
         VALUES (?1, ?2, ?3, ?4, 'owner', 'active', 2, ?5, ?5)
-      `).bind(userId, profile.sub, email, profile.name || "à¸„à¸£à¸¹à¸žà¸´à¸¡", now).run();
-      user = { id: userId, status: "active", maxDevices: 2 };
+      `).bind(userId, profile.sub, email, profile.name || "ครูพิม", now).run();
+      user = { id: userId, role: "owner", status: "active", maxDevices: 2 };
     }
     if (user.status !== "active") return NextResponse.redirect(appUrl("/?reason=disabled"));
 
@@ -82,7 +82,12 @@ export async function GET(request: NextRequest) {
       .bind(profile.sub, new Date().toISOString(), user.id).run();
 
     const existingDevice = request.cookies.get(DEVICE_COOKIE)?.value;
-    const deviceId = existingDevice || crypto.randomUUID();
+    let deviceId = existingDevice || crypto.randomUUID();
+    if (existingDevice) {
+      const owner = await env.DB.prepare("SELECT user_id AS userId FROM devices WHERE id = ?1 LIMIT 1")
+        .bind(existingDevice).first<{ userId: string }>();
+      if (owner && owner.userId !== user.id) deviceId = crypto.randomUUID();
+    }
     const userAgent = request.headers.get("user-agent") || "unknown";
     const userAgentHash = await sha256(userAgent);
     const now = new Date().toISOString();
@@ -92,17 +97,20 @@ export async function GET(request: NextRequest) {
     if (!device) {
       const count = await env.DB.prepare("SELECT COUNT(*) AS total FROM devices WHERE user_id = ?1 AND status = 'approved'")
         .bind(user.id).first<{ total: number }>();
-      if ((count?.total ?? 0) >= user.maxDevices) return NextResponse.redirect(appUrl("/?reason=device-limit"));
+      const isAdmin = ["owner", "admin", "teacher", "assistant"].includes(user.role);
+      if (!isAdmin && (count?.total ?? 0) >= user.maxDevices) return NextResponse.redirect(appUrl("/?reason=device-limit"));
       await env.DB.prepare(`
         INSERT INTO devices (id, user_id, public_key, label, user_agent_hash, status, created_at, last_seen_at, revoked_at)
-        VALUES (?1, ?2, NULL, 'à¸­à¸¸à¸›à¸à¸£à¸“à¹Œà¸—à¸µà¹ˆà¸¥à¸‡à¸—à¸°à¹€à¸šà¸µà¸¢à¸™', ?3, 'approved', ?4, ?4, NULL)
+        VALUES (?1, ?2, NULL, 'อุปกรณ์ที่ลงทะเบียน', ?3, 'approved', ?4, ?4, NULL)
       `).bind(deviceId, user.id, userAgentHash, now).run();
     } else if (device.status !== "approved") {
       return NextResponse.redirect(appUrl("/?reason=device"));
+    } else {
+      await env.DB.prepare("UPDATE devices SET user_agent_hash=?1,last_seen_at=?2 WHERE id=?3 AND user_id=?4").bind(userAgentHash,now,deviceId,user.id).run();
     }
 
-    await env.DB.prepare("UPDATE sessions SET revoked_at = ?1 WHERE user_id = ?2 AND revoked_at IS NULL")
-      .bind(now, user.id).run();
+    await env.DB.prepare("UPDATE sessions SET revoked_at = ?1 WHERE user_id = ?2 AND device_id = ?3 AND revoked_at IS NULL")
+      .bind(now, user.id, deviceId).run();
     const rawToken = randomToken(48);
     const sessionId = crypto.randomUUID();
     const tokenHash = await sha256(rawToken);
@@ -121,6 +129,3 @@ export async function GET(request: NextRequest) {
     return NextResponse.redirect(appUrl("/?reason=oauth-failed"));
   }
 }
-
-
-
