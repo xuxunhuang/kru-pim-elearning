@@ -4,7 +4,7 @@ Production e-learning system for Kru Pim.
 
 ## Source of truth
 
-- Work only from the local repository: `C:\Users\pokis\Projects\Kru-Pim-Elearning`
+- Work only from the local repository: `C:\Users\pokis\Projects\kru-pim-elearning`
 - GitHub is the private remote backup and collaboration source.
 - Production remains the existing Cloudflare Pages project `krupim-mathlearning`.
 - Google Drive is for approved learning media and student-result images only. Do not edit or sync source code through Google Drive.
