@@ -17,3 +17,5 @@ client_secret_*.json
 *.log
 # Local database exports
 backups/
+
+*.tsbuildinfo
