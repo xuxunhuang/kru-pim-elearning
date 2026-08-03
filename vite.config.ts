@@ -2,7 +2,6 @@ import vinext from "vinext";
 import { defineConfig } from "vite";
 import { sites } from "./build/sites-vite-plugin";
 
-const DATABASE_ID = "00000000-0000-4000-8000-000000000000";
 
 export default defineConfig(async () => {
   process.env.WRANGLER_WRITE_LOGS ??= "false";
@@ -18,7 +17,6 @@ export default defineConfig(async () => {
         config: {
           main: "./worker/index.ts",
           compatibility_flags: ["nodejs_compat"],
-          d1_databases: [{ binding: "DB", database_name: "kru-pim-elearning", database_id: DATABASE_ID }],
         },
       }),
     ],
