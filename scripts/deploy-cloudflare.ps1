@@ -21,9 +21,9 @@ Copy-Item -Path (Join-Path $projectRoot "dist\client\*") -Destination $deployDir
 Copy-Item -Path (Join-Path $projectRoot "dist\server") -Destination (Join-Path $deployDir "_worker.js") -Recurse -Force
 
 Get-ChildItem -LiteralPath (Join-Path $deployDir "_worker.js") -Filter "wrangler*.json*" -File -ErrorAction SilentlyContinue | Remove-Item -Force
-$workerDeployDir = Join-Path $deployDir "_worker.js\.wrangler\deploy"
-if (Test-Path -LiteralPath $workerDeployDir) {
-  Remove-Item -LiteralPath $workerDeployDir -Recurse -Force
+$generatedDeployDir = Join-Path $projectRoot ".wrangler\deploy"
+if (Test-Path -LiteralPath $generatedDeployDir) {
+  Remove-Item -LiteralPath $generatedDeployDir -Recurse -Force
 }
 
 $routesSource = Join-Path $projectRoot "public\_routes.json"
@@ -37,5 +37,27 @@ if (Test-Path -LiteralPath $workerEntry) {
   pnpm exec terser $workerEntry --compress --mangle --output $workerEntry
 }
 
+$pagesConfig = @"
+{
+  `"`$schema`": `"../node_modules/wrangler/config-schema.json`",
+  `"name`": `"krupim-mathlearning`",
+  `"pages_build_output_dir`": `".`",
+  `"compatibility_date`": `"2026-07-27`",
+  `"compatibility_flags`": [`"nodejs_compat`"],
+  `"d1_databases`": [{
+    `"binding`": `"DB`",
+    `"database_name`": `"krupim-mathlearning`",
+    `"database_id`": `"ee528e6d-9fb4-4b6b-9930-c7c40358e4fa`",
+    `"migrations_dir`": `"../drizzle`"
+  }]
+}
+"@
+[IO.File]::WriteAllText((Join-Path $deployDir "wrangler.jsonc"), $pagesConfig, (New-Object System.Text.UTF8Encoding($false)))
+
 Write-Host "Deploying to existing Cloudflare Pages project: krupim-mathlearning"
-pnpm exec wrangler pages deploy $deployDir --project-name krupim-mathlearning
+Push-Location $deployDir
+try {
+  pnpm exec wrangler pages deploy . --project-name krupim-mathlearning
+} finally {
+  Pop-Location
+}
