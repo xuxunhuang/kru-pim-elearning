@@ -1,9 +1,12 @@
 import { NextResponse } from "next/server";
 import { base64Url, randomToken, sha256 } from "@/lib/auth";
+import { rateLimit,requestIdentity,safeError } from "@/lib/security";
 
 const FLOW_COOKIE = "kp_google_flow";
 
-export async function GET() {
+export async function GET(request:Request) {
+  try {
+    await rateLimit({key:await requestIdentity(request,"oauth-start"),limit:20,windowSeconds:300});
   const clientId = process.env.GOOGLE_CLIENT_ID;
   const redirectUri = process.env.GOOGLE_REDIRECT_URI;
   if (!clientId || !redirectUri) {
@@ -36,4 +39,5 @@ export async function GET() {
     path: "/",
   });
   return response;
+  } catch(error) { return safeError(error,"เริ่มเข้าสู่ระบบไม่สำเร็จ"); }
 }

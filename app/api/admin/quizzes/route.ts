@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { requireUser } from "@/lib/auth";
 import { assertAdmin, fingerprint } from "@/lib/data";
 import { driveFileId } from "@/lib/google-drive";
+import { requireSameOrigin } from "@/lib/security";
 
 type Question={prompt?:string;type?:string;labelStyle?:string;options?:string[];correctAnswers?:string[];points?:number;pdfPage?:number;explanation?:string;manualGrading?:boolean};
 const clean=(value:unknown,max=500)=>String(value??"").trim().slice(0,max);
@@ -23,6 +24,7 @@ export async function GET(request:NextRequest){
 }
 
 export async function POST(request:NextRequest){
+  requireSameOrigin(request);
   try{
     const actor=await admin(),body=await request.json() as Record<string,unknown>,action=clean(body.action,40),now=new Date().toISOString();
     if(action==="quiz.create"){

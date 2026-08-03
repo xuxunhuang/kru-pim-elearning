@@ -1,6 +1,6 @@
 import { env } from "cloudflare:workers";
 import { NextRequest, NextResponse } from "next/server";
-import { base64Url, DEVICE_COOKIE, randomToken, SESSION_COOKIE, sha256 } from "@/lib/auth";
+import { base64Url, DEVICE_COOKIE, randomToken, SESSION_COOKIE, sha256 } from "@/lib/auth";import { rateLimit,requestIdentity } from "@/lib/security";
 
 const FLOW_COOKIE = "kp_google_flow";
 const SESSION_DAYS = 90;
@@ -17,6 +17,7 @@ function appUrl(path: string) {
 
 export async function GET(request: NextRequest) {
   try {
+    await rateLimit({key:await requestIdentity(request,"oauth-callback"),limit:30,windowSeconds:300});
     const code = request.nextUrl.searchParams.get("code");
     const state = request.nextUrl.searchParams.get("state");
     const flowValue = request.cookies.get(FLOW_COOKIE)?.value;

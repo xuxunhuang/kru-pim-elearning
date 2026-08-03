@@ -4,12 +4,14 @@ import { requireUser } from "@/lib/auth";
 import { assertAdmin, fingerprint } from "@/lib/data";
 import { startDriveUpload } from "@/lib/apps-script-upload";
 import { parseTeacherProfile } from "@/lib/teacher-profile";
+import { requireSameOrigin } from "@/lib/security";
 
 const FOLDER_ID="14pCU1zJSFPlk_k91Qi8Qy6tCdtMxQjir";
 const ALLOWED=new Set(["image/jpeg","image/png","image/webp"]);
 export const dynamic="force-dynamic";
 
 export async function POST(request:Request){
+  requireSameOrigin(request);
   try{
     const actor=await requireUser();assertAdmin(actor);
     const form=await request.formData();const file=form.get("photo");
