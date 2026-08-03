@@ -1,12 +1,22 @@
-﻿import type { Metadata, Viewport } from "next";
+import type { Metadata, Viewport } from "next";
 import "./globals.css";
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://krupim-mathlearning.pages.dev"),
   title: { default: "Kru Pim - E-learning", template: "%s | Kru Pim - E-learning" },
   description: "พื้นที่เรียนออนไลน์ส่วนตัวของนักเรียนครูพิม",
   applicationName: "Kru Pim - E-learning",
   manifest: "/manifest.webmanifest",
   icons: { icon: "/icon.png", apple: "/apple-touch-icon.png" },
+  openGraph: {
+    type: "website",
+    locale: "th_TH",
+    siteName: "Kru Pim E-learning",
+    title: "Kru Pim E-learning",
+    description: "พื้นที่เรียนออนไลน์ส่วนตัวของนักเรียนครูพิม",
+    images: [{ url: "/og.png", width: 1200, height: 630, alt: "Kru Pim E-learning" }],
+  },
+  twitter: { card: "summary_large_image", title: "Kru Pim E-learning", description: "พื้นที่เรียนออนไลน์ส่วนตัวของนักเรียนครูพิม", images: ["/og.png"] },
 };
 
 export const viewport: Viewport = { themeColor: "#d94f88" };

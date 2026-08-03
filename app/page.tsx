@@ -52,7 +52,7 @@ export default async function LoginPage({
             </div>
             <Link className="demo-link" href="/demo">ดูตัวอย่างพื้นที่เรียน <span>→</span></Link>
           </div>
-          <small className="privacy-note">การเข้าสู่ระบบถือว่าคุณรับทราบนโยบายความเป็นส่วนตัวและเงื่อนไขการใช้สื่อการเรียน</small>
+          <small className="privacy-note">การเข้าสู่ระบบถือว่าคุณรับทราบ <Link href="/privacy">นโยบายความเป็นส่วนตัว</Link> และ <Link href="/terms">ข้อกำหนดการใช้งาน</Link></small>
         </div>
       </section>
     </main>

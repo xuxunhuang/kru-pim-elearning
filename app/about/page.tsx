@@ -30,6 +30,6 @@ export default async function AboutPage(){
     </div>
     <StudentResultsGrid results={profile.studentResults.filter(item=>item.active!==false)}/>
     <section className="about-cta"><Image src="/kru-pim-mascot.png" width={180} height={180} alt=""/><div><span className="eyebrow">พร้อมเริ่มเรียนหรือยัง?</span><h2>มาเรียนให้เข้าใจไปด้วยกัน</h2><p>เข้าสู่พื้นที่เรียนส่วนตัวเพื่อดูคอร์ส บทเรียน และความคืบหน้าของคุณ</p></div><Link href={profile.contactUrl}>{profile.contactLabel} →</Link></section>
-    <footer className="about-footer"><b>Kru Pim E-learning</b><span>พื้นที่เรียนออนไลน์ส่วนตัว</span></footer>
+    <footer className="about-footer"><b>Kru Pim E-learning</b><span>พื้นที่เรียนออนไลน์ส่วนตัว</span><span><Link href="/privacy">ความเป็นส่วนตัว</Link> · <Link href="/terms">ข้อกำหนดการใช้งาน</Link></span></footer>
   </main>
 }
