@@ -5,7 +5,7 @@ export const users = sqliteTable("users", {
   googleSub: text("google_sub").notNull(),
   email: text("email").notNull(),
   displayName: text("display_name_admin").notNull(),
-  role: text("role", { enum: ["student", "owner", "recovery"] }).notNull().default("student"),
+  role: text("role", { enum: ["student", "owner", "admin", "teacher", "assistant", "recovery"] }).notNull().default("student"),
   status: text("status", { enum: ["active", "suspended", "archived"] }).notNull().default("active"),
   maxDevices: integer("max_devices").notNull().default(1),
   createdAt: text("created_at").notNull(),
@@ -56,7 +56,7 @@ export const lessons = sqliteTable("lessons", {
   id: text("id").primaryKey(),
   courseId: text("course_id").notNull().references(() => courses.id),
   title: text("title").notNull(),
-  type: text("type", { enum: ["video", "pdf"] }).notNull(),
+  type: text("type", { enum: ["video", "pdf", "quiz"] }).notNull(),
   providerAssetId: text("provider_asset_id").notNull(),
   position: integer("position").notNull(),
   status: text("status", { enum: ["draft", "published", "archived"] }).notNull().default("draft"),
@@ -121,3 +121,12 @@ export const siteSettings = sqliteTable("site_settings", {
   updatedBy: text("updated_by").notNull().references(() => users.id),
   updatedAt: text("updated_at").notNull(),
 });
+
+
+export const quizzes = sqliteTable("quizzes", {
+  id:text("id").primaryKey(), lessonId:text("lesson_id").notNull().references(()=>lessons.id), pdfAssetId:text("pdf_asset_id").notNull(), durationMinutes:integer("duration_minutes").notNull().default(60), maxAttempts:integer("max_attempts").notNull().default(1), passPercent:integer("pass_percent").notNull().default(50), showResultMode:text("show_result_mode",{enum:["hidden","score","review"]}).notNull().default("score"), shuffleQuestions:integer("shuffle_questions",{mode:"boolean"}).notNull().default(false), shuffleOptions:integer("shuffle_options",{mode:"boolean"}).notNull().default(false), instructions:text("instructions").notNull().default(""), createdAt:text("created_at").notNull(), updatedAt:text("updated_at").notNull(),
+},t=>[uniqueIndex("quizzes_lesson_unique").on(t.lessonId)]);
+export const quizQuestions = sqliteTable("quiz_questions", { id:text("id").primaryKey(),quizId:text("quiz_id").notNull().references(()=>quizzes.id),position:integer("position").notNull(),pdfPage:integer("pdf_page"),prompt:text("prompt").notNull().default(""),questionType:text("question_type").notNull(),labelStyle:text("label_style").notNull().default("latin"),optionsJson:text("options_json").notNull().default("[]"),correctAnswersJson:text("correct_answers_json").notNull().default("[]"),points:integer("points").notNull().default(1),explanation:text("explanation").notNull().default(""),manualGrading:integer("manual_grading",{mode:"boolean"}).notNull().default(false),createdAt:text("created_at").notNull(),updatedAt:text("updated_at").notNull() },t=>[uniqueIndex("quiz_question_position_unique").on(t.quizId,t.position)]);
+export const quizAttempts = sqliteTable("quiz_attempts", { id:text("id").primaryKey(),quizId:text("quiz_id").notNull().references(()=>quizzes.id),userId:text("user_id").notNull().references(()=>users.id),sessionId:text("session_id").notNull().references(()=>sessions.id),attemptNumber:integer("attempt_number").notNull(),status:text("status",{enum:["in_progress","submitted","pending_review","graded"]}).notNull().default("in_progress"),startedAt:text("started_at").notNull(),expiresAt:text("expires_at").notNull(),submittedAt:text("submitted_at"),score:integer("score"),maxScore:integer("max_score"),percent:integer("percent"),suspiciousCount:integer("suspicious_count").notNull().default(0),teacherRemark:text("teacher_remark").notNull().default(""),deletedAt:text("deleted_at"),deletedBy:text("deleted_by"),deleteReason:text("delete_reason"),createdAt:text("created_at").notNull(),updatedAt:text("updated_at").notNull() },t=>[uniqueIndex("quiz_attempt_number_unique").on(t.quizId,t.userId,t.attemptNumber),index("quiz_attempt_report_idx").on(t.quizId,t.deletedAt,t.status)]);
+export const quizAnswers = sqliteTable("quiz_answers", { id:text("id").primaryKey(),attemptId:text("attempt_id").notNull().references(()=>quizAttempts.id),questionId:text("question_id").notNull().references(()=>quizQuestions.id),answerJson:text("answer_json").notNull().default("null"),awardedPoints:integer("awarded_points"),isCorrect:integer("is_correct",{mode:"boolean"}),gradedBy:text("graded_by"),gradedAt:text("graded_at"),createdAt:text("created_at").notNull(),updatedAt:text("updated_at").notNull() },t=>[uniqueIndex("quiz_answer_unique").on(t.attemptId,t.questionId)]);
+export const quizSecurityEvents = sqliteTable("quiz_security_events", { id:text("id").primaryKey(),attemptId:text("attempt_id").notNull().references(()=>quizAttempts.id),userId:text("user_id").notNull().references(()=>users.id),eventType:text("event_type").notNull(),detailJson:text("detail_json"),occurredAt:text("occurred_at").notNull() },t=>[index("quiz_security_attempt_idx").on(t.attemptId,t.occurredAt)]);

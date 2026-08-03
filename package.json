@@ -12,7 +12,11 @@
                     "start":  "vinext start",
                     "lint":  "eslint . --ignore-pattern dist --ignore-pattern .next",
                     "db:generate":  "drizzle-kit generate",
-                    "deploy:production":  "powershell -ExecutionPolicy Bypass -File scripts/deploy-cloudflare.ps1"
+                    "deploy:production":  "powershell -ExecutionPolicy Bypass -File scripts/deploy-cloudflare.ps1",
+                    "test":  "node --experimental-strip-types --test tests/*.test.ts",
+                    "smoke":  "powershell -ExecutionPolicy Bypass -File scripts/smoke-check.ps1",
+                    "db:backup":  "powershell -ExecutionPolicy Bypass -File scripts/d1-backup.ps1",
+                    "db:restore:local":  "powershell -ExecutionPolicy Bypass -File scripts/d1-restore.ps1"
                 },
     "dependencies":  {
                          "drizzle-orm":  "0.45.2",
